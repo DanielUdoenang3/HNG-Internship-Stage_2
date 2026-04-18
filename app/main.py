@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.api.router.profile import router
 
@@ -22,6 +24,22 @@ app.add_middleware(
 )
 
 app.add_middleware(AlwaysCORSMiddleware)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = exc.errors()
+    # Check if it's a missing/empty name — return 400 instead of 422
+    for error in errors:
+        if "name" in error.get("loc", ()):
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "message": "Missing or empty name"},
+            )
+    # All other validation errors stay as 422
+    return JSONResponse(
+        status_code=422,
+        content={"status": "error", "message": errors[0].get("msg", "Invalid input")},
+    )
 
 app.include_router(router)
 
