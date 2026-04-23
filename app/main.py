@@ -28,17 +28,18 @@ app.add_middleware(AlwaysCORSMiddleware)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = exc.errors()
-    # Check if it's a missing/empty name — return 400 instead of 422
     for error in errors:
-        if "name" in error.get("loc", ()):
+        loc = error.get("loc", ())
+        # Missing/empty body field
+        if error.get("type") in ("missing", "value_error") and "name" in loc:
             return JSONResponse(
                 status_code=400,
-                content={"status": "error", "message": "Missing or empty name"},
+                content={"status": "error", "message": "Missing or empty parameter"},
             )
-    # All other validation errors stay as 422
+    # Invalid query param types (e.g. min_age=abc)
     return JSONResponse(
         status_code=422,
-        content={"status": "error", "message": errors[0].get("msg", "Invalid input")},
+        content={"status": "error", "message": "Invalid query parameters"},
     )
 
 app.include_router(router)

@@ -1,5 +1,4 @@
 import json
-import re
 
 from app.models.base import User
 from sqlalchemy.orm import Session
@@ -34,6 +33,9 @@ async def seed_users_using_seed_json_file(db: Session, seed_file_path: str) -> d
         profiles = users_data.get("profiles", users_data) if isinstance(users_data, dict) else users_data
 
         for user_data in profiles:
+            exists = db.query(User).filter(User.name == user_data["name"]).first()
+            if exists:
+                continue
             user = User(
                 name=user_data["name"],
                 gender=user_data["gender"],
@@ -107,6 +109,9 @@ async def get_all_users(
     page = page if page is not None else 1
     limit = min(limit if limit is not None else 10, 50)
 
+    # Total count before pagination
+    total = query.count()
+
     offset = (page - 1) * limit
     query = query.offset(offset).limit(limit)
 
@@ -114,7 +119,7 @@ async def get_all_users(
     return success_list_response(
         status_code=status.HTTP_200_OK,
         data=[_serialize_user(user) for user in users],
-        count=len(users),
+        count=total,
         page=page,
         limit=limit
     )
