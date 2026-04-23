@@ -1,31 +1,24 @@
 from fastapi import Depends, Response
 from sqlalchemy.orm import Session
 from app.utils.database import get_db
-from app.schema.profile import UserProfile
-from app.services.profiles import create_user, get_user, get_all_users, delete_user
+from app.services.profiles import get_all_users, seed_users_using_seed_json_file
 from typing import Optional
-
-
-async def create_user_controller(data: UserProfile, db: Session = Depends(get_db)):
-    return await create_user(data, db)
-
-
-async def get_user_controller(id: str, db: Session = Depends(get_db)):
-    return await get_user(id, db)
 
 
 async def get_all_users_controller(
     db: Session = Depends(get_db),
     gender: Optional[str] = None,
-    country_id: Optional[str] = None,
     age_group: Optional[str] = None,
+    country_id: Optional[str] = None,
+    min_age: Optional[int] = None,
+    max_age: Optional[int] = None,
+    min_gender_probability: Optional[float] = None,
+    min_country_probability: Optional[float] = None,
+    page: int = 1,
+    limit: int = 10,
+
 ):
-    return await get_all_users(db, gender, country_id, age_group)
+    return await get_all_users(db, gender, age_group, country_id, min_age, max_age, min_gender_probability, min_country_probability, page, limit)                
 
-
-async def delete_user_controller(id: str, db: Session = Depends(get_db), response: Response = None):
-    result = await delete_user(id, db)
-    if result is None:
-        response.status_code = 204
-        return response
-    return result
+async def seed_users_controller(db: Session = Depends(get_db)):
+    return await seed_users_using_seed_json_file(db, "seed_profiles.json")

@@ -962,7 +962,7 @@ wheels = [
 ]
 
 [[package]]
-name = "stage-1"
+name = "stage-2"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

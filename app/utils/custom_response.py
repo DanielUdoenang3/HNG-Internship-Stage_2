@@ -16,12 +16,14 @@ def success_response(status_code: int, data: Optional[dict] = None, message: Opt
     return JSONResponse(status_code=status_code, content=jsonable_encoder(response_data))
 
 
-def success_list_response(status_code: int, data: list, count: int):
+def success_list_response(status_code: int, data: list, count: int, page: int = None, limit: int = None):
     """Returns a structured response for list endpoints"""
 
     response_data = {
         "status": "success",
-        "count": count,
+        "page": page,
+        "limit": limit,
+        "total": count,
         "data": data,
     }
 
@@ -37,14 +39,3 @@ def error_response(status_code: int, message: str):
     }
 
     return JSONResponse(status_code=status_code, content=jsonable_encoder(response_data))
-
-
-def gateway_error_response(external_api: str):
-    """Returns a 502 structured response for invalid external API responses"""
-
-    response_data = {
-        "status": "502",
-        "message": f"{external_api} returned an invalid response",
-    }
-
-    return JSONResponse(status_code=502, content=jsonable_encoder(response_data))
