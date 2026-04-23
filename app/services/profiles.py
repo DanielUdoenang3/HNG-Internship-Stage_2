@@ -87,24 +87,26 @@ async def get_all_users(
     if min_country_probability is not None:
         query = query.filter(User.country_probability >= min_country_probability)
 
-    SORTABLE_FIELDS = {"name", "age", "gender", "age_group", "country_id", "gender_probability", "country_probability", "created_at"}
+    SORTABLE_FIELDS = {"age", "created_at", "gender_probability"}
 
     if sort_by:
         if sort_by not in SORTABLE_FIELDS:
             return error_response(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message=f"Invalid sort_by field: '{sort_by}'. Allowed: {', '.join(sorted(SORTABLE_FIELDS))}"
+                message=f"Invalid sort_by field: '{sort_by}'. Allowed: age, created_at, gender_probability"
             )
+        if order not in ("asc", "desc"):
+            order = "asc"
         if order == "desc":
             query = query.order_by(getattr(User, sort_by).desc())
         else:
             query = query.order_by(getattr(User, sort_by))
 
-    if limit is not None:
-        query = query.limit(limit)
-    if page is not None and limit is not None:
-        offset = (page - 1) * limit
-        query = query.offset(offset)
+    page = page if page is not None else 1
+    limit = min(limit if limit is not None else 10, 50)
+
+    offset = (page - 1) * limit
+    query = query.offset(offset).limit(limit)
 
     users = query.all()
     return success_list_response(
