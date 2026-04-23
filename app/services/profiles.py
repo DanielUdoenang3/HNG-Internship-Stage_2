@@ -1,4 +1,5 @@
 import json
+import re
 
 from app.models.base import User
 from sqlalchemy.orm import Session
@@ -7,6 +8,7 @@ from app.utils.custom_response import (
     success_response,
     success_list_response,
 )
+from app.utils.query_parser import parse_query
 from fastapi import status
 
 
@@ -115,4 +117,35 @@ async def get_all_users(
         count=len(users),
         page=page,
         limit=limit
+    )
+
+
+async def search_users_by_query(
+    db: Session,
+    q: str,
+    limit: int = None,
+    page: int = None,
+) -> dict:
+    if not q or not q.strip():
+        return error_response(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            message="Missing or empty query"
+        )
+
+    filters = parse_query(q)
+    if filters is None:
+        return error_response(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            message="Unable to interpret query"
+        )
+
+    return await get_all_users(
+        db=db,
+        gender=filters.get("gender"),
+        age_group=filters.get("age_group"),
+        country_id=filters.get("country_id"),
+        min_age=filters.get("min_age"),
+        max_age=filters.get("max_age"),
+        limit=limit,
+        page=page,
     )

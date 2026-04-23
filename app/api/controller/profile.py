@@ -1,7 +1,7 @@
 from fastapi import Depends, Response
 from sqlalchemy.orm import Session
 from app.utils.database import get_db
-from app.services.profiles import get_all_users, seed_users_using_seed_json_file
+from app.services.profiles import get_all_users, seed_users_using_seed_json_file, search_users_by_query
 from typing import Optional
 
 
@@ -28,3 +28,12 @@ async def get_all_users_controller(
 
 async def seed_users_controller(db: Session = Depends(get_db)):
     return await seed_users_using_seed_json_file(db, "seed_profiles.json")
+
+
+async def search_users_controller(
+    q: str,
+    db: Session = Depends(get_db),
+    limit: Optional[int] = None,
+    page: Optional[int] = None,
+):
+    return await search_users_by_query(db, q, limit, page)
