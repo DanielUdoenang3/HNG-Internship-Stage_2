@@ -45,4 +45,13 @@ app.include_router(router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to Daniel Udoenang's HNG-Internship Stage 1 Genderize, Agify, and Nationalize API!"}
+    return {
+        "message": "HNG Internship Stage 2 — Demographic Profiles API",
+        "description": "Query, filter, sort, and search demographic profiles using structured filters or plain English.",
+        "endpoints": {
+            "list": "GET /api/profiles",
+            "search": "GET /api/profiles/search?q=young males from nigeria",
+            "seed": "POST /api/profiles/seed",
+        },
+        "docs": "/docs",
+    }
