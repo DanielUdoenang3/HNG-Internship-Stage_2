@@ -14,11 +14,17 @@ async def get_all_users_controller(
     max_age: Optional[int] = None,
     min_gender_probability: Optional[float] = None,
     min_country_probability: Optional[float] = None,
-    page: int = 1,
-    limit: int = 10,
-
+    limit: Optional[int] = None,
+    page: Optional[int] = None,
+    sort_by: Optional[str] = None,
+    order: Optional[str] = None,
 ):
-    return await get_all_users(db, gender, age_group, country_id, min_age, max_age, min_gender_probability, min_country_probability, page, limit)                
+    return await get_all_users(
+        db, gender, age_group, country_id,
+        min_age, max_age,
+        min_gender_probability, min_country_probability,
+        limit, page, sort_by, order
+    )
 
 async def seed_users_controller(db: Session = Depends(get_db)):
     return await seed_users_using_seed_json_file(db, "seed_profiles.json")

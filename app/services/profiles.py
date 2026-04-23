@@ -87,7 +87,14 @@ async def get_all_users(
     if min_country_probability is not None:
         query = query.filter(User.country_probability >= min_country_probability)
 
+    SORTABLE_FIELDS = {"name", "age", "gender", "age_group", "country_id", "gender_probability", "country_probability", "created_at"}
+
     if sort_by:
+        if sort_by not in SORTABLE_FIELDS:
+            return error_response(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message=f"Invalid sort_by field: '{sort_by}'. Allowed: {', '.join(sorted(SORTABLE_FIELDS))}"
+            )
         if order == "desc":
             query = query.order_by(getattr(User, sort_by).desc())
         else:
